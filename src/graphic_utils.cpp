@@ -20,15 +20,16 @@ void draw_grid(const GridMap& map, sf::RenderTarget& target)
 			va[4 * vertex_index + 2].position = sf::Vector2f(vertex_x + cell_size, vertex_y + cell_size);
 			va[4 * vertex_index + 3].position = sf::Vector2f(vertex_x, vertex_y + cell_size);
 
-			sf::Color color = sf::Color::Black;
+			sf::Color color = sf::Color::Red;
 			if (map.getContentAt(x, y) == Cell::Filled) {
 				color = sf::Color::Green;
 			} else if (map.getContentAt(x, y) == Cell::Target) {
 				color = sf::Color::Red;
-			} else {
-				const float dist = 5*map.getCellAt(x, y)->dist_to_target;
+			} else if (map.getCellAt(x, y)->dist_to_target > -1) {
+				const float dist = 0.5f * map.getCellAt(x, y)->dist_to_target;
 				color = sf::Color(dist, dist, dist);
 			}
+
 			va[4 * vertex_index + 0].color = color;
 			va[4 * vertex_index + 1].color = color;
 			va[4 * vertex_index + 2].color = color;
