@@ -128,6 +128,7 @@ int main()
 	agent_shape.setFillColor(sf::Color::Yellow);
 
 	bool click = false;
+	bool crowd_update = false;
 	while (window.isOpen())
 	{
 		const sf::Vector2i mouse_position = sf::Mouse::getPosition(window);
@@ -143,6 +144,9 @@ int main()
 			else if (event.type == sf::Event::MouseButtonReleased) {
 				click = false;
 			}
+			else if (event.type == sf::Event::KeyReleased) {
+				crowd_update = !crowd_update;
+			}
 		}
 
 		if (!click) {
@@ -156,13 +160,18 @@ int main()
 
 		draw_grid(map, window);
 		
-		computeAgentsCollisions(crowd);
-		computeAgentsMapCollisions(crowd, map);
+		if (crowd_update) {
+			computeAgentsCollisions(crowd);
+			computeAgentsMapCollisions(crowd, map);
+			for (Agent& agent : crowd)
+			{
+				updateAgent(agent, map);
+				agent.update();
+			}
+		}
 
 		for (Agent& agent : crowd)
 		{
-			updateAgent(agent, map);
-			agent.update();
 			agent_shape.setPosition(agent.position);
 			window.draw(agent_shape);
 		}
