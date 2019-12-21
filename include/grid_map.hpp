@@ -74,6 +74,15 @@ struct GridMap
 		return &map[y * width + x];
 	}
 
+	const Cell* getCellAt(const sf::Vector2i& position) const
+	{
+		if (!isValidCell(position.x, position.y)) {
+			return nullptr;
+		}
+
+		return &map[position.y * width + position.x];
+	}
+
 	bool isValidCell(int32_t x, int32_t y) const
 	{
 		if (x < 0 || uint32_t(x) >= width) {

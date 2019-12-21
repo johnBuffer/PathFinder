@@ -19,6 +19,41 @@ void check_min(const sf::Vector2i& position, int32_t& min_dist, const Cell*& min
 }
 
 
+void computeAgentCellCollision(Agent& agent, const Cell* cell, const GridMap& map)
+{
+	if (cell) {
+		if (cell->content == Cell::Filled) {
+			sf::Vector2f cell_pos((cell->position.x + 0.5f) * map.cell_size, (cell->position.y + 0.5f) * map.cell_size);
+			sf::Vector2f v = cell_pos - agent.position;
+			const float length = sqrt(v.x*v.x + v.y*v.y);
+
+			if (length < 10.0f) {
+				agent.position.x -= (10.0f - length) * v.x / length;
+				agent.position.y -= (10.0f - length) * v.y / length;
+			}
+		}
+	}
+}
+
+
+void computeAgentsMapCollisions(std::vector<Agent>& agents, const GridMap& map)
+{
+	for (Agent& agent : agents)
+	{
+		const sf::Vector2i current_pos(agent.position.x / map.cell_size, agent.position.y / map.cell_size);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(0, 0)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(1, 0)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(-1, 0)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(0, 1)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(0, -1)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(1, 1)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(1, -1)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(-1, 1)), map);
+		computeAgentCellCollision(agent, map.getCellAt(current_pos + sf::Vector2i(-1, -1)), map);
+	}
+}
+
+
 void computeAgentsCollisions(std::vector<Agent>& agents)
 {
 	const uint64_t agent_count = agents.size();
@@ -28,7 +63,7 @@ void computeAgentsCollisions(std::vector<Agent>& agents)
 		for (uint64_t k(i+1); k < agent_count; ++k) {
 			Agent& b2 = agents[k];
 
-			const float col_radius(20.0f);
+			const float col_radius(10.0f);
 			sf::Vector2f col_axe(b1.position - b2.position);
 			const float length2(col_axe.x*col_axe.x + col_axe.y*col_axe.y);
 			if (length2 < col_radius*col_radius && length2 > 0.01f)
@@ -84,12 +119,12 @@ int main()
 	GridMap map(10, 100, 100);
 
 	std::vector<Agent> crowd;
-	for (int i(100); i--;) {
+	for (int i(1000); i--;) {
 		crowd.emplace_back(sf::Vector2f(rand() % 900 + 50, rand() % 900 + 50));
 	}
 
-	sf::CircleShape agent_shape(10.0f);
-	agent_shape.setOrigin(10.0f, 10.0f);
+	sf::CircleShape agent_shape(5);
+	agent_shape.setOrigin(5, 5);
 	agent_shape.setFillColor(sf::Color::Yellow);
 
 	bool click = false;
@@ -122,6 +157,7 @@ int main()
 		draw_grid(map, window);
 		
 		computeAgentsCollisions(crowd);
+		computeAgentsMapCollisions(crowd, map);
 
 		for (Agent& agent : crowd)
 		{
