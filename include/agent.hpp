@@ -2,20 +2,19 @@
 
 #include <SFML/Graphics.hpp>
 #include "grid_map.hpp"
+#include "united_solver.hpp"
 
 
 struct Agent
 {
-	Agent(const sf::Vector2f& position_ = sf::Vector2f(0.0f, 0.0f))
-		: position(position_)
-		, velocity(0.0f, 0.0f)
+	Agent(up::BodyPtr body_)
+		: body(body_)
 	{}
 
-	void update()
+	const sf::Vector2f& position() const
 	{
-		position += velocity;
+		return sf::Vector2f(body->position().x, body->position().y);
 	}
 
-	sf::Vector2f position;
-	sf::Vector2f velocity;
+	up::BodyPtr body;
 };

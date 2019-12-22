@@ -94,67 +94,54 @@ struct GridMap
 		return true;
 	}
 
+	sf::Vector2f cellCoordToWorldCoord(int32_t x, int32_t y) const
+	{
+		return sf::Vector2f((x + 0.5f) * cell_size, (y + 0.5f) * cell_size);
+	}
+
+	sf::Vector2f cellCoordToWorldCoord(const Cell* cell) const
+	{
+		return cellCoordToWorldCoord(cell->position.x, cell->position.y);
+	}
+
+	void check_cell(const sf::Vector2i& pos, int32_t dist, std::list<Cell*>& to_visit)
+	{
+		Cell* cell = getCellAt(pos.x, pos.y);
+		if (cell) {
+			if (cell->content != Cell::Filled) {
+				if (cell->dist_to_target == -1 || cell->dist_to_target > dist + 1) {
+					cell->dist_to_target = dist + 1;
+					to_visit.push_back(cell);
+				}
+			}
+		}
+	}
+
 	void compute_dist_to(uint32_t x, uint32_t y)
 	{
-		for (Cell& cell : map)
-		{
+		for (Cell& cell : map) {
 			cell.dist_to_target = -1;
 		}
 
 		std::list<Cell*> to_visit;
 		Cell* start_cell = getCellAt(x, y);
-		if (start_cell)
-		{
+		if (start_cell) {
 			start_cell->dist_to_target = 0;
 			to_visit.push_back(start_cell);
-			while (!to_visit.empty())
-			{
+			while (!to_visit.empty()) {
 				Cell* cell = to_visit.front();
 				const int32_t current_dist = cell->dist_to_target;
 				const sf::Vector2i& current_pos(cell->position);
 
-				// Top
-				Cell* top_cell = getCellAt(current_pos.x, current_pos.y - 1);
-				if (top_cell) {
-					if (top_cell->content != Cell::Filled) {
-						if (top_cell->dist_to_target == -1 || top_cell->dist_to_target > current_dist + 1) {
-							top_cell->dist_to_target = current_dist + 1;
-							to_visit.push_back(top_cell);
-						}
-					}
-				}
+				std::vector<sf::Vector2i> surrounding = {
+					sf::Vector2i( 1,  0),
+					sf::Vector2i(-1,  0),
+					sf::Vector2i( 0,  1),
+					sf::Vector2i( 0, -1),
+				};
 
-				// Bot
-				Cell* bot_cell = getCellAt(current_pos.x, current_pos.y + 1);
-				if (bot_cell) {
-					if (bot_cell->content != Cell::Filled) {
-						if (bot_cell->dist_to_target == -1 || bot_cell->dist_to_target > current_dist + 1) {
-							bot_cell->dist_to_target = current_dist + 1;
-							to_visit.push_back(bot_cell);
-						}
-					}
-				}
-
-				// Left
-				Cell* left_cell = getCellAt(current_pos.x - 1, current_pos.y);
-				if (left_cell) {
-					if (left_cell->content != Cell::Filled) {
-						if (left_cell->dist_to_target == -1 || left_cell->dist_to_target > current_dist + 1) {
-							left_cell->dist_to_target = current_dist + 1;
-							to_visit.push_back(left_cell);
-						}
-					}
-				}
-
-				// Right
-				Cell* right_cell = getCellAt(current_pos.x + 1, current_pos.y);
-				if (right_cell) {
-					if (right_cell->content != Cell::Filled) {
-						if (right_cell->dist_to_target == -1 || right_cell->dist_to_target > current_dist + 1) {
-							right_cell->dist_to_target = current_dist + 1;
-							to_visit.push_back(right_cell);
-						}
-					}
+				for (const sf::Vector2i& offset : surrounding) {
+					check_cell(current_pos + offset, current_dist, to_visit);
 				}
 
 				to_visit.pop_front();

@@ -26,7 +26,7 @@ void draw_grid(const GridMap& map, sf::RenderTarget& target)
 			} else if (map.getContentAt(x, y) == Cell::Target) {
 				color = sf::Color::Red;
 			} else if (map.getCellAt(x, y)->dist_to_target > -1) {
-				const float dist = 0.5f * map.getCellAt(x, y)->dist_to_target;
+				const int8_t dist = static_cast<int8_t>(0.5f * map.getCellAt(x, y)->dist_to_target);
 				color = sf::Color(dist, dist, dist);
 			}
 
