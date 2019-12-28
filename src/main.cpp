@@ -55,8 +55,9 @@ void updateAgent(Agent& agent, const GridMap& map)
 		sf::Vector2f v = next_cell_pos - agent.position();
 		const float length = sqrt(v.x*v.x + v.y*v.y);
 
-		float force = 3000.0f;
+		float force = 2000.0f;
 		agent.body->accelerate(force * up::Vec2(v.x / length, v.y / length));
+		//agent.body->setVelocity(force * up::Vec2(v.x / length, v.y / length));
 	}
 }
 
@@ -68,7 +69,7 @@ int main()
 	sf::RenderWindow window(sf::VideoMode(WIN_WIDTH, WIN_HEIGHT), "PathFinder");
 	//window.setVerticalSyncEnabled(true);
 
-	const float body_radius = 5.0f;
+	const float body_radius = 10.0f;
 	GridMap map(2*body_radius, 1000/body_radius, 1000/body_radius);
 	up::UnitedSolver solver(up::Vec2(1000, 1000), body_radius, up::Vec2(0, 0));
 
@@ -140,6 +141,9 @@ int main()
 				updateAgent(agent, map);
 			}
 			solver.update(0.007);
+			for (Agent& agent : crowd) {
+				//agent.body->stop();
+			}
 		}
 
 		/*for (const up::Body& body : solver.getBodies())
